@@ -133,3 +133,39 @@ def get_user_by_id(user_id):
     except Exception as e:
         # If there is an error getting the user
         return {'error': f'An error occurred: {e}'}, 500
+    
+
+# Add the update user by id route with put method
+@user_route.route('/users/<int:user_id>', methods=['PUT'])
+@jwt_required()
+def update_user(user_id):
+        
+        # Connect to the database
+        connection = engine.connect()
+        Session = sessionmaker(connection)
+        session = Session()
+        session.begin()
+        
+        # Get the data from the request
+        data = request.json
+        username = data.get('username')
+        email = data.get('email')
+        
+        try:
+            # Fetch the user from the database
+            user = session.query(User).filter_by(id=user_id).first()
+            
+            if user:
+                # If the user exists
+                user.username = username
+                user.email = email
+                session.commit()
+                return {'message': 'User updated successfully'}, 200
+            else:
+                # If the user does not exist
+                return {'message': 'User not found'}, 404
+            
+        except Exception as e:
+            # If there is an error updating the user
+            session.rollback()
+            return {'error': f'An error occurred: {e}'}, 500
