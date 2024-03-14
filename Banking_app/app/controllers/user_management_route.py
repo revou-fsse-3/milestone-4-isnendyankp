@@ -21,3 +21,9 @@ def register():
     Session = sessionmaker(connection)
     session = Session()
     session.begin()
+
+    # Get the request data
+    data = request.json
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password_hash')
