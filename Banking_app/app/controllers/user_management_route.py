@@ -3,6 +3,7 @@ from flask import Blueprint, request, jsonify
 from app.connectors.mysql_connector import engine
 from sqlalchemy.orm import sessionmaker
 from app import bcrypt
+from flask_jwt_extended import create_access_token, jwt_required
 
 # Create a blueprint
 user_route = Blueprint('user_route', __name__)
@@ -106,4 +107,29 @@ def get_users():
     
     except Exception as e:
         # If there is an error getting the users
+        return {'error': f'An error occurred: {e}'}, 500
+    
+# Add the get user by id route with get method
+@user_route.route('/users/<int:user_id>', methods=['GET'])
+@jwt_required()
+def get_user_by_id(user_id):
+    
+    # Connect to the database
+    connection = engine.connect()
+    Session = sessionmaker(connection)
+    session = Session()
+    
+    try:
+        # Fetch the user from the database
+        user = session.query(User).filter_by(id=user_id).first()
+        
+        if user:
+            # If the user exists
+            return user.to_dict(), 200
+        else:
+            # If the user does not exist
+            return {'message': 'User not found'}, 404
+        
+    except Exception as e:
+        # If there is an error getting the user
         return {'error': f'An error occurred: {e}'}, 500
