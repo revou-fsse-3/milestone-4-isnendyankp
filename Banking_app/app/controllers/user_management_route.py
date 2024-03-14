@@ -49,7 +49,38 @@ def register():
         return {'error': f'An error occurred: {e}'}, 500
     
 
-# Add the login route
+# Add the login route with get method
 @user_route.route('/login', methods=['GET'])
 def get_login():
     return {'message': 'Login page'}, 200
+
+# Add the login route with post method
+@user_route.route('/login', methods=['POST'])
+def login():
+        
+        # Connect to the database
+        connection = engine.connect()
+        Session = sessionmaker(connection)
+        session = Session()
+        
+        # Get the data from the request
+        data = request.json
+        email = data.get('email')
+        password = data.get('password_hash')
+        
+        # Get the user from the database
+        user = session.query(User).filter_by(email=email).first()
+        
+        try:
+            # Check if the user exists and the password is correct
+            if user:
+                if bcrypt.checkpw(password.encode('utf-8'), user.password_hash.encode('utf-8')):
+                    access_token = create_access_token(identity=user.id)
+                    return {'access_token': access_token}, 200
+                else:
+                    return {'message': 'Invalid password'}, 401
+            else:
+                return {'message': 'User not found'}, 404
+        
+        except Exception as e:
+            return {'error': f'An error occurred: {e}'}, 500
