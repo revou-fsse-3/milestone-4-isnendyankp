@@ -27,7 +27,7 @@ def check_account_ownership(account_id, user_id):
     except Exception as e:
         return False
     
-# Create new account for user 
+# Create new account for user with POST Method
 @account_routes.route('/account', methods=['POST'])
 @jwt_required()
 def create_account():
@@ -57,3 +57,21 @@ def create_account():
         # If there is an error adding the account to the database
         session.rollback()
         return {'error': f'An error occurred: {e}'}, 500
+    
+# Get all accounts for user with GET Method
+@account_routes.route('/account', methods=['GET'])
+@jwt_required()
+def get_accounts():
+    
+    # Connect to the database
+    connection = engine.connect()
+    Session = sessionmaker(connection)
+    session = Session()
+    user_id = get_jwt_identity()
+    
+    # Get the user's accounts
+    user = session.query(User).filter_by(id=user_id).first()
+    accounts = user.accounts
+    
+    #
+    return jsonify([account.to_dict() for account in accounts])
