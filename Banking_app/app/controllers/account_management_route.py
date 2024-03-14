@@ -140,3 +140,34 @@ def update_account(account_id):
             return {'error': f'An error occurred: {e}'}, 500
     else:
         return {'error': 'Unauthorized'}, 401
+    
+# Delete account by id with DELETE Method 
+@account_routes.route('/account/<int:account_id>', methods=['DELETE'])
+@jwt_required()
+def delete_account(account_id):
+    
+    # Get the user id from the JWT
+    user_id = get_jwt_identity()
+    
+    # Check if the user owns the account
+    if check_account_ownership(account_id, user_id):
+        connection = engine.connect()
+        Session = sessionmaker(connection)
+        session = Session()
+        session.begin()
+        
+        # Get the account by id
+        account = session.query(Account).filter_by(id=account_id).first()
+        
+        try:
+            # Delete the account
+            session.delete(account)
+            session.commit()
+            return {'message': 'Account deleted successfully'}, 200
+        
+        except Exception as e:
+            # If there is an error deleting the account
+            session.rollback()
+            return {'error': f'An error occurred: {e}'}, 500
+    else:
+        return {'error': 'Unauthorized'}, 401
