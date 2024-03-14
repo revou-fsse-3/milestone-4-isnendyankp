@@ -27,3 +27,7 @@ def register():
     username = data.get('username')
     email = data.get('email')
     password = data.get('password_hash')
+
+    # Hash the password
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    new_user = User(username=username, email=email, password_hash=hashed_password)
