@@ -12,3 +12,12 @@ user_route = Blueprint('user_route', __name__)
 def register():
     return {'message': 'Register a new user'}, 200
 
+# register with post method
+@user_route.route('/register', methods=['POST'])
+def register():
+
+    # Connect to the database
+    connection = engine.connect()
+    Session = sessionmaker(connection)
+    session = Session()
+    session.begin()
