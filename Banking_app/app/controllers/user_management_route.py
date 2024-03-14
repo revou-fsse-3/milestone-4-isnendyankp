@@ -46,3 +46,9 @@ def register():
         # Rollback the session
         session.rollback()
         return {'error': f'An error occurred: {e}'}, 500
+    
+
+# Add the login route
+@user_route.route('/login', methods=['GET'])
+def get_login():
+    return {'message': 'Login page'}, 200
