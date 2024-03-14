@@ -84,3 +84,26 @@ def login():
         
         except Exception as e:
             return {'error': f'An error occurred: {e}'}, 500
+        
+
+# Add the get users route with get method       
+@user_route.route('/users', methods=['GET'])
+def get_users():
+    
+    # Connect to the database
+    connection = engine.connect()
+    Session = sessionmaker(connection)
+    session = Session()
+    
+    try:
+        # Fetch all the users from the database
+        users = session.query(User).all()
+        
+        # Convert the users to a dictionary
+        user_data = [user.to_dict() for user in users]
+        
+        return {'users': user_data}, 200
+    
+    except Exception as e:
+        # If there is an error getting the users
+        return {'error': f'An error occurred: {e}'}, 500
