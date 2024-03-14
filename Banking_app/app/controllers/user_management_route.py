@@ -1,62 +1,57 @@
-from app.models.user import User
 from flask import Blueprint, request, jsonify
+from app.models.user import User
 from app.connectors.mysql_connector import engine
 from sqlalchemy.orm import sessionmaker
-from app import bcrypt
 from flask_jwt_extended import create_access_token, jwt_required, unset_jwt_cookies
+import bcrypt
 
-# Create a blueprint
-user_route = Blueprint('user_route', __name__)
+# Create the user routes blueprint
+user_routes = Blueprint('user_routes', __name__)
 
-# register with get method
+# Add the register route
+@user_routes.route('/register', methods=['GET'])
+def get_register():
+    return {'message': 'Register page'}, 200
 
-@user_route.route('/register', methods=['GET'])
+# Add the register route
+@user_routes.route('/register', methods=['POST'])
 def register():
-    return {'message': 'Register a new user'}, 200
-
-# register with post method
-@user_route.route('/register', methods=['POST'])
-def register():
-
+    
     # Connect to the database
     connection = engine.connect()
     Session = sessionmaker(connection)
     session = Session()
     session.begin()
-
-    # Get the request data
+    
+    # Get the data from the request
     data = request.json
     username = data.get('username')
     email = data.get('email')
     password = data.get('password_hash')
-
+    
     # Hash the password
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     new_user = User(username=username, email=email, password_hash=hashed_password)
-
-    # try and catch block
-
+    
     try:
         # Add the new user to the database
         session.add(new_user)
         session.commit()
-
-        # Return the new user
+        
         return {'message': 'User created successfully'}, 201
     
     except Exception as e:
-        # Rollback the session
+        # If there is an error adding the user to the database
         session.rollback()
         return {'error': f'An error occurred: {e}'}, 500
-    
 
-# Add the login route with get method
-@user_route.route('/login', methods=['GET'])
+# Add the login route
+@user_routes.route('/login', methods=['GET'])
 def get_login():
     return {'message': 'Login page'}, 200
 
-# Add the login route with post method
-@user_route.route('/login', methods=['POST'])
+# Add the login route
+@user_routes.route('/login', methods=['POST'])
 def login():
         
         # Connect to the database
@@ -85,10 +80,9 @@ def login():
         
         except Exception as e:
             return {'error': f'An error occurred: {e}'}, 500
-        
 
-# Add the get users route with get method       
-@user_route.route('/users', methods=['GET'])
+# Add the get users route        
+@user_routes.route('/users', methods=['GET'])
 def get_users():
     
     # Connect to the database
@@ -108,9 +102,9 @@ def get_users():
     except Exception as e:
         # If there is an error getting the users
         return {'error': f'An error occurred: {e}'}, 500
-    
-# Add the get user by id route with get method
-@user_route.route('/users/<int:user_id>', methods=['GET'])
+
+# Add the get user by id route
+@user_routes.route('/users/<int:user_id>', methods=['GET'])
 @jwt_required()
 def get_user_by_id(user_id):
     
@@ -133,10 +127,9 @@ def get_user_by_id(user_id):
     except Exception as e:
         # If there is an error getting the user
         return {'error': f'An error occurred: {e}'}, 500
-    
 
-# Add the update user by id route with put method
-@user_route.route('/users/<int:user_id>', methods=['PUT'])
+# Add the update user route    
+@user_routes.route('/users/<int:user_id>', methods=['PUT'])
 @jwt_required()
 def update_user(user_id):
         
@@ -169,9 +162,9 @@ def update_user(user_id):
             # If there is an error updating the user
             session.rollback()
             return {'error': f'An error occurred: {e}'}, 500
-        
-# Add the delete user by id route with delete method
-@user_route.route('/users/<int:user_id>', methods=['DELETE'])
+
+# for deleting a user by id        
+@user_routes.route('/users/<int:user_id>', methods=['DELETE'])
 @jwt_required()
 def delete_user(user_id):
         
@@ -200,7 +193,7 @@ def delete_user(user_id):
             return {'error': f'An error occurred: {e}'}, 500
         
 # Logout route
-@user_route.route('/logout', methods=['POST'])
+@user_routes.route('/logout', methods=['POST'])
 def logout():
     response = jsonify({"message": "Logout successful"})
     unset_jwt_cookies(response)
