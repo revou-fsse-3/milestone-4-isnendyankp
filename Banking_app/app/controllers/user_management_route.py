@@ -169,3 +169,32 @@ def update_user(user_id):
             # If there is an error updating the user
             session.rollback()
             return {'error': f'An error occurred: {e}'}, 500
+        
+# Add the delete user by id route with delete method
+@user_route.route('/users/<int:user_id>', methods=['DELETE'])
+@jwt_required()
+def delete_user(user_id):
+        
+        # Connect to the database
+        connection = engine.connect()
+        Session = sessionmaker(connection)
+        session = Session()
+        session.begin()
+        
+        try:
+            # Fetch the user from the database
+            user = session.query(User).filter_by(id=user_id).first()
+            
+            if user:
+                # If the user exists
+                session.delete(user)
+                session.commit()
+                return {'message': 'User deleted successfully'}, 200
+            else:
+                # If the user does not exist
+                return {'message': 'User not found'}, 404
+            
+        except Exception as e:
+            # If there is an error deleting the user
+            session.rollback()
+            return {'error': f'An error occurred: {e}'}, 500
