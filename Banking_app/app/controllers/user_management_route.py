@@ -31,3 +31,18 @@ def register():
     # Hash the password
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     new_user = User(username=username, email=email, password_hash=hashed_password)
+
+    # try and catch block
+
+    try:
+        # Add the new user to the database
+        session.add(new_user)
+        session.commit()
+
+        # Return the new user
+        return {'message': 'User created successfully'}, 201
+    
+    except Exception as e:
+        # Rollback the session
+        session.rollback()
+        return {'error': f'An error occurred: {e}'}, 500
