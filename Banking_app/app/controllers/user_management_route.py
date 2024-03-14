@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify
 from app.connectors.mysql_connector import engine
 from sqlalchemy.orm import sessionmaker
 from app import bcrypt
-from flask_jwt_extended import create_access_token, jwt_required
+from flask_jwt_extended import create_access_token, jwt_required, unset_jwt_cookies
 
 # Create a blueprint
 user_route = Blueprint('user_route', __name__)
@@ -198,3 +198,10 @@ def delete_user(user_id):
             # If there is an error deleting the user
             session.rollback()
             return {'error': f'An error occurred: {e}'}, 500
+        
+# Logout route
+@user_route.route('/logout', methods=['POST'])
+def logout():
+    response = jsonify({"message": "Logout successful"})
+    unset_jwt_cookies(response)
+    return response
