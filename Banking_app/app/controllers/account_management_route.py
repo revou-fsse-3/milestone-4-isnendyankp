@@ -99,3 +99,44 @@ def get_account(account_id):
         return jsonify(account.to_dict())
     else:
         return {'error': 'Unauthorized'}, 401
+    
+# Update account by id with PUT Method
+@account_routes.route('/account/<int:account_id>', methods=['PUT'])
+@jwt_required()
+def update_account(account_id):
+    
+    # Get the user id from the JWT
+    user_id = get_jwt_identity()
+    
+    # Check if the user owns the account
+    if check_account_ownership(account_id, user_id):
+        
+        # Connect to the database
+        connection = engine.connect()
+        Session = sessionmaker(connection)
+        session = Session()
+        session.begin()
+        
+        # Get the data from the request
+        data = request.json
+        account_type = data.get('account_type')
+        account_number = data.get('account_number')
+        balance = data.get('balance')
+        
+        # Get the account by id
+        account = session.query(Account).filter_by(id=account_id).first()
+        
+        try:
+            # Update the account
+            account.account_type = account_type
+            account.account_number = account_number
+            account.balance = balance
+            session.commit()
+            return {'message': 'Account updated successfully'}, 200
+        
+        except Exception as e:
+            # If there is an error updating the account
+            session.rollback()
+            return {'error': f'An error occurred: {e}'}, 500
+    else:
+        return {'error': 'Unauthorized'}, 401
