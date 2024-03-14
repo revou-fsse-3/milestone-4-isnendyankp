@@ -2,6 +2,7 @@ from app.models.user import User
 from flask import Blueprint, request, jsonify
 from app.connectors.mysql_connector import engine
 from sqlalchemy.orm import sessionmaker
+from app import bcrypt
 
 # Create a blueprint
 user_route = Blueprint('user_route', __name__)
