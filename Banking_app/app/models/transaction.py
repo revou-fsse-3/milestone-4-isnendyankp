@@ -17,3 +17,15 @@ class Transaction(Base):
     # Relationship with Account model
     from_account = relationship('Account', foreign_keys=[from_account_id])
     to_account = relationship('Account', foreign_keys=[to_account_id])
+
+    # this for converting the model to a dictionary
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'from_account_id': self.from_account_id,
+            'to_account_id': self.to_account_id,
+            'amount': str(self.amount),
+            'type': self.type,
+            'description': self.description,
+            'created_at': self.created_at
+        }
