@@ -1,7 +1,6 @@
 import pytest
 from datetime import datetime
 from app.models.user import User
-from app.models.account import Account
 
 # Test User model attributes
 def test_user_model_attributes():
