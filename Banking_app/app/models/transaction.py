@@ -14,4 +14,6 @@ class Transaction(Base):
     description = mapped_column(String(255))
     created_at = mapped_column(DateTime(timezone=True), server_default=func.now())
     
-    
+    # Relationship with Account model
+    from_account = relationship('Account', foreign_keys=[from_account_id])
+    to_account = relationship('Account', foreign_keys=[to_account_id])
