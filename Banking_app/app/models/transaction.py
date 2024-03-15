@@ -29,3 +29,7 @@ class Transaction(Base):
             'description': self.description,
             'created_at': self.created_at
         }
+    
+    # this for converting the model to a string
+    def __repr__(self):
+        return f'<Transaction {self.id}>'
