@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from sqlalchemy import or_
 from app.models.account import Account
+from app.models.transaction import Transaction
 from app.models.user import User
 from app.connectors.mysql_connector import engine
 from sqlalchemy.orm import sessionmaker
@@ -155,11 +157,14 @@ def delete_account(account_id):
         Session = sessionmaker(connection)
         session = Session()
         session.begin()
-        
-        # Get the account by id
-        account = session.query(Account).filter_by(id=account_id).first()
-        
+
         try:
+            # Delete related transactions
+            session.query(Transaction).filter(or_(Transaction.from_account_id == account_id, Transaction.to_account_id == account_id)).delete()
+            
+            # Get the account by id
+            account = session.query(Account).filter_by(id=account_id).first()
+            
             # Delete the account
             session.delete(account)
             session.commit()
@@ -171,3 +176,19 @@ def delete_account(account_id):
             return {'error': f'An error occurred: {e}'}, 500
     else:
         return {'error': 'Unauthorized'}, 401
+        
+    #     # Get the account by id
+    #     account = session.query(Account).filter_by(id=account_id).first()
+        
+    #     try:
+    #         # Delete the account
+    #         session.delete(account)
+    #         session.commit()
+    #         return {'message': 'Account deleted successfully'}, 200
+        
+    #     except Exception as e:
+    #         # If there is an error deleting the account
+    #         session.rollback()
+    #         return {'error': f'An error occurred: {e}'}, 500
+    # else:
+    #     return {'error': 'Unauthorized'}, 401

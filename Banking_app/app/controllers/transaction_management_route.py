@@ -1,5 +1,5 @@
 from app.controllers.account_management_route import check_account_ownership
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models.transaction import Transaction
 from app.models.account import Account
@@ -82,18 +82,24 @@ def transfer():
         
         # Check if the from account has enough balance
         if check_balance(from_account_id, amount, session):
+
+            try:
+                # Transfer the money between accounts
+                if transfer_money(from_account_id, to_account_id, amount, description, session):
+                    return {'message': 'Money transferred successfully'}, 200
+            except Exception as e:
+               return jsonify({'error': str(e)}), 500
             
-            # Transfer the money between accounts
-            if transfer_money(from_account_id, to_account_id, amount, description, session):
-                return {'message': 'Money transferred successfully'}, 200
-            else:
-                return {'error': 'An error occurred while transferring money'}, 500
+            # else:
+                # return {'error': 'An error occurred while transferring money'}, 500
         
         else:
             return {'error': 'The from account does not have enough balance'}, 400
     
     else:
         return {'error': 'The accounts do not belong to the user'}, 400
+    
+    return {'error': 'error all'}, 500
 
 # Withdrawal money from account
 @transaction_routes.route('/transaction/withdrawal', methods=['POST'])
